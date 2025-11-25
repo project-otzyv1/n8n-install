@@ -99,7 +99,7 @@ fi
 ### 3. Клонирование проекта с GitHub
 echo "📥 Клонируем проект с GitHub..."
 rm -rf /opt/n8n-install
-git clone https://github.com/kalininlive/n8n-beget-install.git /opt/n8n-install
+git clone https://github.com/project-otzyv1/n8n-install.git /opt/n8n-install
 cd /opt/n8n-install
 
 ### 4. Генерация .env файлов (без Basic Auth — n8n сам спросит при первом запуске)

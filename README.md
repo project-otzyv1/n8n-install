@@ -22,7 +22,7 @@
 **1. Запусти одну команду:**
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/kalininlive/n8n-beget-install/main/install.sh)
+bash <(curl -s https://raw.githubusercontent.com/project-otzyv1/n8n-install/main/install.sh)
 ```
 
 **2. Введи данные:**
