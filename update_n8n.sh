@@ -80,7 +80,7 @@ apt-get autoremove --purge -y
 journalctl --vacuum-size=100M
 journalctl --vacuum-time=7d
 find /var/log -type f -name "*.gz" -delete
-find /var/log -type f -name "*.log" -exec truncate -s 0 {} \;
+find /opt/n8n-install/logs -type f -name "*.log" -exec truncate -s 0 {} \;
 find /var/lib/docker/containers/ -type f -name "*-json.log" -exec truncate -s 0 {} \;
 systemctl restart docker
 docker image prune -f
