@@ -1,0 +1,97 @@
+FROM n8nio/n8n:latest
+
+# Работаем под root для установки пакетов
+USER root
+
+# Фикс репозитория Alpine + обновления
+RUN set -eux; \
+  printf '%s\n' \
+    "https://dl-cdn.alpinelinux.org/alpine/v3.22/main" \
+    "https://dl-cdn.alpinelinux.org/alpine/v3.22/community" \
+  > /etc/apk/repositories; \
+  apk update; \
+  apk upgrade --no-cache
+
+# Системные пакеты (добавил ffmpeg для moviepy)
+RUN apk add --no-cache \
+  bash \
+  curl \
+  git \
+  make \
+  g++ \
+  gcc \
+  python3 \
+  py3-pip \
+  libffi-dev \
+  yt-dlp \
+  apache2-utils \
+  ffmpeg
+
+# Чуть ускорим npm
+RUN npm config set fund false && npm config set audit false
+
+# Выделенный каталог с питоновскими либами — как у нас было
+RUN mkdir -p /opt/instagrapi
+
+# Ставим питон-библиотеки ровно туда (как в удачной схеме)
+RUN pip install --no-cache-dir --target=/opt/instagrapi \
+    "instagrapi==2.1.5" \
+    "requests>=2.31.0" \
+    "Pillow>=8.1.1" \
+    "moviepy>=1.0.3" \
+    "typing-extensions" \
+    "pydantic<3" \
+    "pydantic-core<3"
+
+# Патч на pinned_channels_info, чтобы не падало на отсутствующем ключе
+RUN sed -i 's/data\["pinned_channels_info"\]\["pinned_channels_list"\]/data.get("pinned_channels_info", {}).get("pinned_channels_list", [])/' /opt/instagrapi/instagrapi/extractors.py || true
+
+# ТВОИ npm-глобалки (оставляю, как ты просил — ничего не удаляю)
+RUN for pkg in \
+    axios \
+    node-fetch \
+    form-data \
+    moment \
+    date-fns \
+    lodash \
+    fs-extra \
+    path \
+    csv-parser \
+    xml2js \
+    js-yaml \
+    xlsx \
+    jsonwebtoken \
+    simple-oauth2 \
+    uuid \
+    openai \
+    @tensorflow/tfjs-node \
+    langchain \
+    node-telegram-bot-api \
+    discord.js \
+    vk-io \
+    whatsapp-web.js \
+    fluent-ffmpeg \
+    ffmpeg-static \
+    google-tts-api \
+    @vitalets/google-translate-token \
+    node-wav \
+    mongoose \
+    ioredis \
+    bcrypt \
+    validator \
+    joi \
+    winston \
+    dotenv \
+    prom-client \
+    node-downloader-helper \
+    adm-zip \
+    archiver \
+  ; do \
+    echo "🔧 Устанавливаем $pkg..." && npm install -g "$pkg" || echo "⚠️ Не удалось установить $pkg, продолжаем..."; \
+  done
+
+# Локально — для доступности в Code-нодах
+RUN npm install oauth-1.0a
+
+# Возвращаем пользователя node
+USER node
